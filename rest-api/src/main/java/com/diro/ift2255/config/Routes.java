@@ -29,8 +29,10 @@ public class Routes {
     private static void registerCourseRoutes(Javalin app) {
         CourseService courseService = new CourseService(new HttpClientApi());
         CourseController courseController = new CourseController(courseService);
+        CourseController courseController = new CourseController(courseService, comparisonService);
 
         app.get("/courses", courseController::getAllCourses);
         app.get("/courses/{id}", courseController::getCourseById);
+        app.post("/courses/compare", courseController::compareCourses);
     }
 }
