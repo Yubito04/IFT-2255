@@ -14,9 +14,11 @@ import java.util.Optional;
 public class CourseController {
     // Service qui contient la logique métier pour la manipulation des cours et la communication avec les services externes
     private final CourseService service;
+    private final ComparisonService comparisonService;
 
     public CourseController(CourseService service) {
         this.service = service;
+        this.comparisonService = comparisonService;
     }
 
     /**
@@ -75,4 +77,21 @@ public class CourseController {
 
         return queryParams;
     }
+
+     public void compareCourses(Context ctx) {
+        CompareRequest req = ctx.bodyAsClass(CompareRequest.class);
+
+        if (req == null || req.courseIds == null || req.courseIds.isEmpty()) {
+            ctx.status(400).json(ResponseUtil.formatError("La liste des cours à comparer est vide ou invalide."));
+            return;
+        }
+
+        ComparisonResult result = comparisonService.compareCourses(req.courseIds);
+        ctx.json(result);
+    }
+
+     public static class CompareRequest {
+         public List<String> courseIds;
+    }
+
 }
