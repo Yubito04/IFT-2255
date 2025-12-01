@@ -7,6 +7,7 @@ public class Course {
     private String id;
     private String name;
     private String description;
+    private int credits; 
 
     public Course() {}
 
@@ -19,6 +20,12 @@ public class Course {
         this(id, name);
         this.description = desc;
     }
+     
+    public Course(String id, String name, String desc, int credits) {
+        this(id, name, desc);
+        this.credits = credits;
+    }
+
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -28,4 +35,7 @@ public class Course {
 
     public String getDescription() { return description; }
     public void setDescription(String email) { this.description = email; }
+
+    public int getCredits() { return credits; }
+    public void setCredits(int credits) { this.credits = credits; }
 }
