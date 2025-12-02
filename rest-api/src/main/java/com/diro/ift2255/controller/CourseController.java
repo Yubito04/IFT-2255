@@ -3,38 +3,43 @@ package com.diro.ift2255.controller;
 import io.javalin.http.Context;
 import com.diro.ift2255.model.Course;
 import com.diro.ift2255.service.CourseService;
+import com.diro.ift2255.service.ComparisonService;
+import com.diro.ift2255.service.ComparisonService.ComparisonResult;
 import com.diro.ift2255.util.ResponseUtil;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
 public class CourseController {
-    // Service qui contient la logique métier pour la manipulation des cours et la communication avec les services externes
     private final CourseService service;
     private final ComparisonService comparisonService;
 
-    public CourseController(CourseService service) {
+    public CourseController(CourseService service, ComparisonService comparisonService) { // MODIF
         this.service = service;
         this.comparisonService = comparisonService;
     }
 
     /**
      * Récupère la liste de tous les cours.
-     * @param ctx Contexte Javalin représentant la requête et la réponse HTTP
      */
     public void getAllCourses(Context ctx) {
         Map<String, String> queryParams = extractQueryParams(ctx);
-
         List<Course> courses = service.getAllCourses(queryParams);
-        ctx.json(courses);
+
+        // Si liste vide, ajouter un message informatif
+        if (courses.isEmpty() && !queryParams.isEmpty()) {
+            ctx.json(Map.of(
+                    "courses", courses,
+                    "message", "Aucun cours trouvé pour ces critères"
+            ));
+        } else {
+            ctx.json(courses);
+        }
     }
 
     /**
      * Récupère un cours spécifique par son ID.
-     * @param ctx Contexte Javalin représentant la requête et la réponse HTTP
      */
     public void getCourseById(Context ctx) {
         String id = ctx.pathParam("id");
@@ -53,32 +58,9 @@ public class CourseController {
     }
 
     /**
-     * Vérifie que l'ID du cours est bien formé
-     * @param courseId L'ID du cours à valider
-     * @return Valeur booléeene indiquant si l'ID est valide
+     * Compare plusieurs cours et retourne la charge totale
      */
-    private boolean validateCourseId(String courseId) {
-        return courseId != null && courseId.trim().length() >= 6;
-    }
-
-    /**
-     * Récupère tous les paramètres de requête depuis l'URL et les met dans une Map
-     * @param ctx Contexte Javalin représentant la requête HTTP
-     * @return Map contenant les paramètres de requête et leurs valeurs
-     */
-    private Map<String, String> extractQueryParams(Context ctx) {
-        Map<String, String> queryParams = new HashMap<>();
-
-        ctx.queryParamMap().forEach((key, values) -> {
-            if (!values.isEmpty()) {
-                queryParams.put(key, values.get(0));
-            }
-        });
-
-        return queryParams;
-    }
-
-     public void compareCourses(Context ctx) {
+    public void compareCourses(Context ctx) {
         CompareRequest req = ctx.bodyAsClass(CompareRequest.class);
 
         if (req == null || req.courseIds == null || req.courseIds.isEmpty()) {
@@ -90,8 +72,21 @@ public class CourseController {
         ctx.json(result);
     }
 
-     public static class CompareRequest {
-         public List<String> courseIds;
+    private boolean validateCourseId(String courseId) {
+        return courseId != null && courseId.trim().length() >= 6;
     }
 
+    private Map<String, String> extractQueryParams(Context ctx) {
+        Map<String, String> queryParams = new HashMap<>();
+        ctx.queryParamMap().forEach((key, values) -> {
+            if (!values.isEmpty()) {
+                queryParams.put(key, values.get(0));
+            }
+        });
+        return queryParams;
+    }
+
+    public static class CompareRequest {
+        public List<String> courseIds;
+    }
 }

@@ -1,38 +1,29 @@
 package com.diro.ift2255.config;
 
+import io.javalin.Javalin;
 import com.diro.ift2255.controller.CourseController;
-import com.diro.ift2255.controller.UserController;
-import com.diro.ift2255.service.UserService;
 import com.diro.ift2255.service.CourseService;
+import com.diro.ift2255.service.ComparisonService;
 import com.diro.ift2255.util.HttpClientApi;
 
-import io.javalin.Javalin;
-
 public class Routes {
-
     public static void register(Javalin app) {
-        registerUserRoutes(app);
-        registerCourseRoutes(app);
-    }
-
-    private static void registerUserRoutes(Javalin app) {
-        UserService userService = new UserService();
-        UserController userController = new UserController(userService);
-
-        app.get("/users", userController::getAllUsers);
-        app.get("/users/{id}", userController::getUserById);
-        app.post("/users", userController::createUser);
-        app.put("/users/{id}", userController::updateUser);
-        app.delete("/users/{id}", userController::deleteUser);
-    }
-
-    private static void registerCourseRoutes(Javalin app) {
-        CourseService courseService = new CourseService(new HttpClientApi());
-        CourseController courseController = new CourseController(courseService);
+        // Initialisation des services
+        HttpClientApi httpClient = new HttpClientApi();
+        CourseService courseService = new CourseService(httpClient);
+        ComparisonService comparisonService = new ComparisonService(courseService);
         CourseController courseController = new CourseController(courseService, comparisonService);
 
+        // Routes
+        app.get("/", ctx -> ctx.result("API de choix de cours - UdeM"));
+
+        // CU09 - Recherche de cours
         app.get("/courses", courseController::getAllCourses);
+
+        // CU10 - Voir les détails d'un cours
         app.get("/courses/{id}", courseController::getCourseById);
+
+        // CU11 - Comparer des cours
         app.post("/courses/compare", courseController::compareCourses);
     }
 }

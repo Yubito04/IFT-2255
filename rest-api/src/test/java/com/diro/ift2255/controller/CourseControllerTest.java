@@ -1,5 +1,7 @@
 package com.diro.ift2255.controller;
 
+
+import com.diro.ift2255.service.ComparisonService;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -24,6 +26,8 @@ public class CourseControllerTest {
     @Mock // ← Crée un FAUX Context Javalin
     private Context mockContext;
 
+    private ComparisonService mockComparisonService;
+
     private CourseController controller; // ← Le VRAI contrôleur à tester
 
     private long testStartTime;
@@ -38,13 +42,14 @@ public class CourseControllerTest {
     @BeforeEach
     void setup(TestInfo testInfo) {
         // On injecte les FAUX objets dans le VRAI contrôleur
-        controller = new CourseController(mockService);
+        controller = new CourseController(mockService, mockComparisonService); // 👈 MODIF ICI
         testStartTime = System.currentTimeMillis();
 
         System.out.println("\nTEST: " + testInfo.getDisplayName());
         System.out.println("    ├─ Method: " + testInfo.getTestMethod().get().getName());
         System.out.println("    ├─ Assertions:");
     }
+
 
     @AfterEach
     void tearDown(TestInfo testInfo) {
